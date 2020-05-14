@@ -1,0 +1,17 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+HCSR04	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+DistanceinCm		KEYWORD2
+begin			KEYWORD2
+DistanceUpdated	KEYWORD2
+IsObjectDetected KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
