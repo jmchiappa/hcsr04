@@ -66,6 +66,7 @@ uint8_t HCSR04::begin(uint8_t PrescalerFactor)
 	} else {
   	DEBUG1LN("_Instance n'est pas nul, on cherche le couple qui fonctionne");
 		channelRising = find(pin,_Instance);
+    DEBUGLN("channel :", channelRising);
 		if(channelRising == NP)	{
 			return 0;
 		}
