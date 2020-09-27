@@ -14,7 +14,7 @@ uint32_t input_freq = 0;
 /**
     @brief  Input capture interrupt callback : Compute frequency and dutycycle of input signal
 */
-void TIMINPUT_Capture_Rising_IT_callback(HardwareTimer *) {
+void TIMINPUT_Capture_Rising_IT_callback() {
   if(CaptureInProgress) {
     StartHighLevel = MyTim->getCaptureCompare(channelRising);
   }  
@@ -22,7 +22,7 @@ void TIMINPUT_Capture_Rising_IT_callback(HardwareTimer *) {
 
 /* In case of timer rollover, frequency is to low to be measured set values to 0
    To reduce minimum frequency, it is possible to increase prescaler. But this is at a cost of precision. */
-void Rollover_IT_callback(HardwareTimer *) {
+void Rollover_IT_callback() {
   if(CaptureInProgress) {
     ObjectDetected = false;
     CaptureInProgress = false;
@@ -33,7 +33,7 @@ void Rollover_IT_callback(HardwareTimer *) {
 /**
     @brief  Input capture interrupt callback : Compute frequency and dutycycle of input signal
 */
-void TIMINPUT_Capture_Falling_IT_callback(HardwareTimer *) {
+void TIMINPUT_Capture_Falling_IT_callback() {
   
   if( CaptureInProgress ) {
     ObjectDetected = true;
@@ -123,13 +123,14 @@ bool HCSR04::DistanceUpdated(void) {
 	if(!CaptureInProgress) {
     DEBUG("début:",StartHighLevel);
     DEBUG("\tdurée :",HighStateMeasured);
+    DEBUG("\tobjet :",ObjectDetected);
     DEBUGLN("\tdistance :",Distance);
 		if(startTime==0){
 			startTime = millis();
 			DEBUG1LN("début chrono");
 			// donot chnge status for 100 ms
 		}else {
-	  	if(startTime+70<millis()) {
+	  	if(startTime+100<millis()) {
 				DEBUG1LN("début acqui");
 	  		startTime=0;
 	  		newValue=false;
@@ -137,7 +138,7 @@ bool HCSR04::DistanceUpdated(void) {
 		    _Instance->CNT=0;
 		    CaptureInProgress = true;
 		    digitalWrite(_pinTrigger,HIGH);
-		    delayMicroseconds(5);
+		    delayMicroseconds(10);
 		    digitalWrite(_pinTrigger,LOW);
 		  }
 		}
