@@ -28,28 +28,32 @@ void setup() {
 		while(1);
 	}
 }
-
+float  dist1,dist2;
 void loop() {
 	if( sensor1.DistanceUpdated() ) {
 		if( sensor1.IsObjectDetected() ) {
 			// to use with serial plotter
-			PRINT("sensor1: ",sensor1.DistanceinCm());
+			// PRINT("sensor1: ",sensor1.DistanceinCm());
+			dist1 = sensor1.DistanceinCm();
 			// to use with serial monitor
 			//Serial.print("distance : ");Serial.println( sensor.DistanceinCm() );
 		} else {
-			Serial.print("sensor1:no obstacle");
+			// Serial.print("sensor1:no obstacle");
 		}
-		Serial.println();
 }
 	if( sensor2.DistanceUpdated() ) {
 		if( sensor2.IsObjectDetected() ) {
 			// to use with serial plotter
-			PRINT(" - sensor2: ",sensor2.DistanceinCm());
+			// PRINT(" - sensor2: ",sensor2.DistanceinCm());
+			dist2 = sensor2.DistanceinCm();
 			// to use with serial monitor
 			//Serial.print("distance : ");Serial.println( sensor.DistanceinCm() );
 		} else {
-			Serial.print(" - sensor2: no obstacle");
+			// Serial.print(" - sensor2: no obstacle");
 		}
-	Serial.println();
 	}
+	PRINT("sensor1: ",dist1);
+	PRINT(",sensor2: ",dist2);
+	Serial.println();
+	// delay(20);
 }
