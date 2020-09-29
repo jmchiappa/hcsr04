@@ -123,7 +123,7 @@ void StartEchoCancelling() {
   // HCSR04CurrentSensor.MyTim->detachInterrupt(HCSR04CurrentSensor.Pin.channelRising);
   HCSR04CurrentSensor.MyTim->pause();
   HCSR04CurrentSensor.MyTim->setMode(1, TIMER_OUTPUT_COMPARE);
-  HCSR04CurrentSensor.MyTim->setOverflow(50,HERTZ_FORMAT); // next overflow set to 1s
+  HCSR04CurrentSensor.MyTim->setOverflow(30,HERTZ_FORMAT); // next overflow set to 1s
   // HCSR04CurrentSensor.MyTim->attachInterrupt(Rollover_IT_callback);
   HCSR04CurrentSensor.MyTim->setCount(0);
   HCSR04CurrentSensor.MyTim->refresh();
