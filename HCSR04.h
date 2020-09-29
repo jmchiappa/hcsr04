@@ -13,17 +13,39 @@
 #include "Arduino.h"
 #include "PeripheralPins.h"
 
-//#define DEBUG
+// #define DEBUG
+
+/**
+ * Static définitions
+ */
+
+/**
+ * even if there's no really a max number of sensors
+ * keep in mind that each sensor consume a significant part of time
+ * sending pulse : 10 us
+ * time of flight : overflow @ 100 ms (depend on PRESCALAR)
+ * time to recover (echo canceller) : 10 ms (34,8cm at speed of sound)
+ * total : 110 ms per sensor => 10 sensors = 1 s (refresh time) 
+ * 
+*/
+#define MAX_HCSR04_SENSORS  10
+
+#define INVALID_HANDLER 255
 
 #ifdef DEBUG
 # define DEBUG1LN(a)	{Serial.println(a);}
 # define DEBUG(a,b)	{Serial.print(a);Serial.print(b);}
 # define DEBUGLN(a,b)	{Serial.print(a);Serial.println(b);}
+# define LEDoff() digitalWrite(13,LOW)
+# define LEDon()  digitalWrite(13,HIGH)
 #else
 # define DEBUG(a,b)
 # define DEBUGLN(a,b)
 # define DEBUG1LN(a)
+# define LEDoff()
+# define LEDon()
 #endif
+
 static const PinMap PinMap_TMR[] = {
   {PA_0,  TIM2,   STM_PIN_DATA_EXT(STM_MODE_AF_PP, GPIO_PULLUP, GPIO_AF1_TIM2, 1, 0)}, // TIM2_CH1
   {PA_0,  TIM5,   STM_PIN_DATA_EXT(STM_MODE_AF_PP, GPIO_PULLUP, GPIO_AF2_TIM5, 1, 0)}, // TIM5_CH1 - (used by us_ticker)
@@ -87,6 +109,26 @@ static const PinMap PinMap_TMR[] = {
   {NC,    NP,    0}
 };
 
+typedef struct HCSR04PIN {
+  uint8_t trigger;
+  uint8_t echo;
+  uint8_t isActive;
+  uint8_t channelRising;
+  uint8_t channelFalling;
+} hcsr04pin_t;
+
+typedef struct HCSR04_T {
+  hcsr04pin_t Pin;
+  TIM_TypeDef *Instance;
+  HardwareTimer *MyTim;
+  uint32_t tickValue;
+  bool CaptureInProgress;
+  bool ObjectDetected;
+  uint32_t input_freq;
+  float Distance;
+  uint8_t Prescalar;
+  bool newValue;
+} hcsr04_t;
 
 class HCSR04
 {
@@ -102,6 +144,8 @@ class HCSR04
 		uint8_t _pinTrigger;
 		uint8_t _pinEcho;
 		TIM_TypeDef *_Instance;
+    uint8_t Index;
+    HardwareTimer *MyTim;
 };
 
 #endif // hcsr04_h
