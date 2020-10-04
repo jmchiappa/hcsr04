@@ -5,8 +5,6 @@
 
 #include <HardwareTimer.h>
 
-#define HAL_TIM_MODULE_ENABLED
-
 #if defined(HAL_TIM_MODULE_ENABLED) && !defined(HAL_TIM_MODULE_ONLY)
 
 static hcsr04_t HCSR04sensors[MAX_HCSR04_SENSORS];  // static array of servo structures
@@ -27,14 +25,14 @@ volatile uint32_t StartHighLevel, HighStateMeasured;
 /**
  *  global definitions
  */
-void HCSR04TimerReinit(uint8_t index);
-void StartEchoCancelling(void);
+static void HCSR04TimerReinit(uint8_t index);
+static void StartEchoCancelling(void);
 
 /***** global timer callback ******/
 /**
     @brief  Input capture interrupt callback : Compute frequency and dutycycle of input signal
 */
-void TIMINPUT_Capture_Rising_IT_callback() {
+static void TIMINPUT_Capture_Rising_IT_callback() {
   if(HCSR04CurrentSensor.CaptureInProgress) {
     StartHighLevel = HCSR04CurrentSensor.MyTim->getCaptureCompare(HCSR04CurrentSensor.Pin.channelRising);
   }  
@@ -42,15 +40,14 @@ void TIMINPUT_Capture_Rising_IT_callback() {
 
 /* In case of timer rollover, frequency is to low to be measured set values to 0
    To reduce minimum frequency, it is possible to increase prescaler. But this is at a cost of precision. */
-void Rollover_IT_callback() {
+static void Rollover_IT_callback() {
   if(!HCSR04EchoCanceller) {
     if(HCSR04CurrentSensor.CaptureInProgress) {
-      LEDoff();
       HCSR04CurrentSensor.ObjectDetected = false;
       HCSR04CurrentSensor.CaptureInProgress = false;
       HCSR04CurrentSensor.newValue=true;
-      HCSR04SensorIndex++;
-      HCSR04SensorIndex %=HCSR04SensorCount;
+      // HCSR04SensorIndex++;
+      // HCSR04SensorIndex %=HCSR04SensorCount;
       StartEchoCancelling();
       // HCSR04TimerReinit(HCSR04SensorIndex);
     }
@@ -71,7 +68,7 @@ void Rollover_IT_callback() {
 /**
     @brief  Input capture interrupt callback : Compute frequency and dutycycle of input signal
 */
-void TIMINPUT_Capture_Falling_IT_callback() {
+static void TIMINPUT_Capture_Falling_IT_callback() {
   float distance_;
   if(!HCSR04EchoCanceller) {
     if( HCSR04CurrentSensor.CaptureInProgress ) {
@@ -90,7 +87,7 @@ void TIMINPUT_Capture_Falling_IT_callback() {
 /**
  * static declarations
  */
-void HCSR04TimerReinit(uint8_t index) {
+static void HCSR04TimerReinit(uint8_t index) {
   hcsr04_t *sensor = &HCSR04sensors[index];
   HardwareTimer *MyTim = sensor->MyTim;
   MyTim->pause();
@@ -104,7 +101,6 @@ void HCSR04TimerReinit(uint8_t index) {
   MyTim->setPrescaleFactor(sensor->Prescalar);
   MyTim->setOverflow(0x10000); // Max Period value to have the largest possible time to detect rising edge and avoid timer rollover
   MyTim->setCount(0);
-  pinMode(sensor->Pin.trigger, OUTPUT);
   digitalWrite(sensor->Pin.trigger,HIGH);
   delayMicroseconds(10);
   digitalWrite(sensor->Pin.trigger,LOW);
@@ -113,7 +109,7 @@ void HCSR04TimerReinit(uint8_t index) {
   MyTim->resume();
 }
 
-void StartEchoCancelling() {
+static void StartEchoCancelling() {
   // Start the echo canceller :
   // 1. set the current timer to 1 ms of period
   // 2. set the overflow to 10
@@ -123,7 +119,7 @@ void StartEchoCancelling() {
   // HCSR04CurrentSensor.MyTim->detachInterrupt(HCSR04CurrentSensor.Pin.channelRising);
   HCSR04CurrentSensor.MyTim->pause();
   HCSR04CurrentSensor.MyTim->setMode(1, TIMER_OUTPUT_COMPARE);
-  HCSR04CurrentSensor.MyTim->setOverflow(30,HERTZ_FORMAT); // next overflow set to 1s
+  HCSR04CurrentSensor.MyTim->setOverflow(20,HERTZ_FORMAT); // next overflow set to 1s
   // HCSR04CurrentSensor.MyTim->attachInterrupt(Rollover_IT_callback);
   HCSR04CurrentSensor.MyTim->setCount(0);
   HCSR04CurrentSensor.MyTim->refresh();
@@ -168,6 +164,7 @@ uint8_t HCSR04::begin(uint8_t PrescalerFactor)
 	  _Instance = (TIM_TypeDef *)pinmap_peripheral(pin, PinMap_TMR);
 	  channelRising = STM_PIN_CHANNEL(pinmap_function(pin, PinMap_TMR));
     sensor->Instance = this->_Instance;
+    pinMode(sensor->Pin.trigger, OUTPUT);
 	} else {
   	DEBUG1LN("_Instance n'est pas nul, on cherche le couple qui fonctionne");
 		channelRising = find(pin,_Instance);
@@ -214,7 +211,7 @@ bool HCSR04::DistanceUpdated(void) {
 	bool ret=sensor->newValue;
 	if(sensor->newValue) {
     DEBUG("index:",this->Index);
-    DEBUG("début:",StartHighLevel);
+    DEBUG("\tdébut:",StartHighLevel);
     DEBUG("\tdurée :",HighStateMeasured);
     DEBUG("\tobjet :",sensor->ObjectDetected);
     DEBUGLN("\tdistance :",sensor->Distance);

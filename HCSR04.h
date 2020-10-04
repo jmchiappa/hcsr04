@@ -13,7 +13,7 @@
 #include "Arduino.h"
 #include "PeripheralPins.h"
 
-// #define DEBUG
+// #define ISDEBUG
 
 /**
  * Static définitions
@@ -32,7 +32,7 @@
 
 #define INVALID_HANDLER 255
 
-#ifdef DEBUG
+#ifdef ISDEBUG
 # define DEBUG1LN(a)	{Serial.println(a);}
 # define DEBUG(a,b)	{Serial.print(a);Serial.print(b);}
 # define DEBUGLN(a,b)	{Serial.print(a);Serial.println(b);}
