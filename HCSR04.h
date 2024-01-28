@@ -29,6 +29,8 @@
 # include "L476.h"
 #elif defined(STM32F401xE)
 # include "F401.h"
+#elif defined(STM32L432xx)
+# include "L432.h"
 #else
 # error "cette carte n'est pas encore supportée"
 #endif

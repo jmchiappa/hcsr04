@@ -67,11 +67,12 @@ uint8_t HCSR04::begin(uint8_t PrescalerFactor)
 	} else {
   	DEBUG1LN("_Instance n'est pas nul, on cherche le couple qui fonctionne");
 		channelRising = find(pin,_Instance);
-    DEBUGLN("channel :", channelRising);
 		if(channelRising == NP)	{
+      DEBUG1LN("pas de channel trouvé :");
 			return 0;
 		}
 	}
+  DEBUGLN("channel :", channelRising);
   // channelRisings come by pair for TIMER_INPUT_FREQ_DUTY_MEASUREMENT mode:
   // channelRising1 is associated to channelFalling and channelRising3 is associated with channelRising4
   switch (channelRising) {
