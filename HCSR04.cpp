@@ -41,6 +41,7 @@ void TIMINPUT_Capture_Falling_IT_callback() {
   /* prepare DutyCycle computation */
     uint32_t CurrentCapture = MyTim->getCaptureCompare(channelFalling);
     HighStateMeasured = CurrentCapture - StartHighLevel;
+    //if(HighStateMeasured=0xFFFFFFFF) return; 
     Distance = (float)HighStateMeasured / (float)input_freq;
     Distance = Distance / 58.8f;
     newValue=true;
@@ -66,11 +67,12 @@ uint8_t HCSR04::begin(uint8_t PrescalerFactor)
 	} else {
   	DEBUG1LN("_Instance n'est pas nul, on cherche le couple qui fonctionne");
 		channelRising = find(pin,_Instance);
-    DEBUGLN("channel :", channelRising);
 		if(channelRising == NP)	{
+      DEBUG1LN("pas de channel trouvé :");
 			return 0;
 		}
 	}
+  DEBUGLN("channel :", channelRising);
   // channelRisings come by pair for TIMER_INPUT_FREQ_DUTY_MEASUREMENT mode:
   // channelRising1 is associated to channelFalling and channelRising3 is associated with channelRising4
   switch (channelRising) {
