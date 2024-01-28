@@ -16,7 +16,8 @@ uint32_t input_freq = 0;
 */
 void TIMINPUT_Capture_Rising_IT_callback() {
   if(CaptureInProgress) {
-    StartHighLevel = MyTim->getCaptureCompare(channelRising);
+    MyTim->setCount(0);
+    // StartHighLevel = MyTim->getCaptureCompare(channelRising);
   }  
 }
 
@@ -40,8 +41,8 @@ void TIMINPUT_Capture_Falling_IT_callback() {
     CaptureInProgress = false;
   /* prepare DutyCycle computation */
     uint32_t CurrentCapture = MyTim->getCaptureCompare(channelFalling);
-    HighStateMeasured = CurrentCapture - StartHighLevel;
-    Distance = (float)HighStateMeasured / (float)input_freq;
+    // HighStateMeasured = CurrentCapture - StartHighLevel;
+    Distance = (float)CurrentCapture / (float)input_freq;
     Distance = Distance / 58.8f;
     newValue=true;
   }
@@ -130,12 +131,13 @@ bool HCSR04::DistanceUpdated(void) {
 			DEBUG1LN("début chrono");
 			// donot chnge status for 100 ms
 		}else {
-	  	if(startTime+100<millis()) {
+	  	if(startTime+50<millis()) {
 				DEBUG1LN("début acqui");
 	  		startTime=0;
 	  		newValue=false;
 		    ObjectDetected = false;
-		    _Instance->CNT=0;
+		    // _Instance->CNT=0;
+        MyTim->setCount(0);
 		    CaptureInProgress = true;
 		    digitalWrite(_pinTrigger,HIGH);
 		    delayMicroseconds(10);
@@ -153,6 +155,7 @@ bool HCSR04::IsObjectDetected(void) {
 
 float HCSR04::DistanceinCm(){
 	if(!CaptureInProgress) {
+    newValue = false; //clear "new value flag to prevent from reading again DistanceUpdated() = true
 		return Distance;
 	}
 	else {
